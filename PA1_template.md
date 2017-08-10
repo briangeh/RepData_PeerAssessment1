@@ -1,14 +1,10 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 ## Loading and preprocessing the data
 The data is unzipped into the activity folder and the results are read into the activity data table using read.csv. The date column is converted to the date type
 
-```{r}
+
+```r
 unzip("activity.zip", exdir = "activity")
 activity <- read.csv("./activity/activity.csv")
 activity$date <- as.Date(activity$date, "%Y-%m-%d")
@@ -18,7 +14,8 @@ activity$date <- as.Date(activity$date, "%Y-%m-%d")
 ## What is mean total number of steps taken per day?
 This is calculated from the above data, with na.rm = TRUE.
 
-```{r, message = FALSE}
+
+```r
 library(dplyr)
 steps <- group_by(activity, date) %>%
     summarise(steps = sum(steps, na.rm = TRUE))
@@ -30,10 +27,13 @@ calc_median <- median(steps$steps)
 hist(steps$steps, xlab = "Number of steps", ylab = "Number of days", ylim = c(0, 30), main = "Histogram of total number of steps in each day")
 ```
 
-We find that the mean total number of steps taken each day is `r calc_mean`, and the median total number of steps taken each day to be `r calc_median`.
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+We find that the mean total number of steps taken each day is 9354.23, and the median total number of steps taken each day to be 10395.
 
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 intervals <- group_by(activity, interval) %>%
     summarise(steps = mean(steps, na.rm = TRUE))
 
@@ -42,12 +42,15 @@ maximum <- intervals[intervals$steps == max(intervals$steps),]
 with(intervals, plot(interval, steps, type = "l", xlab = "Interval (Time of Day)", ylab = "Average Steps", main = "Average Daily Activity Pattern"))
 ```
 
-The 5 minute interval that contains the maximum number of steps is `r maximum$interval`
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+The 5 minute interval that contains the maximum number of steps is 835
 
 ## Inputing missing values
 In this part, we replace the missing NA values at a specific interval with the mean of the steps that happened across the other days at the same interval. This is already captured in the intervals vector.
 
-```{r}
+
+```r
 tot_no <- sum(is.na(activity$steps))
 
 # makes a copy of the activity data frame
@@ -73,17 +76,20 @@ calc_median_new <- as.character(round(median(steps_new$steps), digits = 2))
 hist(steps_new$steps, xlab = "Number of steps", ylab = "Number of days", ylim = c(0, 40), main = "Histogram of total number of steps in each day (modified data)")
 ```
 
-The total number of missing values in the dataset is `r tot_no`. The new mean and median are `r calc_mean_new` and `r calc_median_new` respectively.
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+The total number of missing values in the dataset is 2304. The new mean and median are 10766.19 and 10766.19 respectively.
 
 ### What has changed with the mean and median
-The mean has increased from `r calc_mean` to `r calc_mean_new`. This is due to the fact that there were previously days which recorded 0 steps (from NA entries) which now have steps which are filled in using the interval mean matching method described above.
+The mean has increased from 9354.23 to 10766.19. This is due to the fact that there were previously days which recorded 0 steps (from NA entries) which now have steps which are filled in using the interval mean matching method described above.
 
-The median has also increased from `r calc_median` to `r calc_median_new`. This is also due to the fact that there were days that recorded 0 steps, which now all record the mean number of steps in a day (given that this was the method we chose to fill in the NAs). 
+The median has also increased from 10395 to 10766.19. This is also due to the fact that there were days that recorded 0 steps, which now all record the mean number of steps in a day (given that this was the method we chose to fill in the NAs). 
 
 This also explains why the median is now equal to the mean, as there are now 8 days which previously recorded 0 steps, but now have the mean number of steps, and are bunched in the middle (hence being captured as the median).
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+
+```r
 library(ggplot2)
 
 # adds new column to serve as a factor
@@ -99,6 +105,8 @@ intervals_new$day_mean <- with(intervals_new, tapply(steps, weekday, mean))
 # plots results
 ggplot(intervals_new, aes(interval, steps)) + geom_line() + facet_grid(weekday ~ .) + geom_hline(aes(yintercept = day_mean), colour = "red") + labs(x = "Interval", y = "Number of Steps in Interval", title = "Average Daily Activity Pattern by Weekday / Weekend")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
 From the chart it can be seen that there are a few significant differences between activity patterns during weekdays and weekends.
 
